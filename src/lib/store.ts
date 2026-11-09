@@ -3,7 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware"
 import { QUOTE_WINDOW_MS, readSpeed } from "./clock"
 import { priceProfile, randomMarketMove } from "./pricing"
 import { MAX_PROFILES, createProfile, isComplete, profileLetter, profileValues } from "./profiles"
-import type { Profile, ProfileValues, Quote, Term } from "./types"
+import type { CompleteProfile, Profile, ProfileValues, Quote, Term } from "./types"
 import { uid } from "./uid"
 
 /** Everything lives under this one localStorage key. Bump the version to reset old saved state. */
@@ -33,7 +33,10 @@ interface QuoteActions {
   /** Save / Update: commit the draft (if any), mark the profile saved and collapse it. */
   saveProfile: (id: string) => void
   setOpenProfile: (id: string | null) => void
+  /** Search / Search again: price every profile in the side panel (all must be complete). */
   search: () => void
+  /** Refresh all rates: reprice the borrowers already in the quote, as they're saved now. */
+  refresh: () => void
   selectRate: (profileId: string, term: Term) => void
   clearSelections: () => void
   lockSelections: () => void
@@ -43,6 +46,36 @@ interface QuoteActions {
 export function selectionKey(quote: Quote | null, selections: Record<string, Term>) {
   if (!quote) return null
   return `${quote.id}:${quote.rows.map((r) => `${r.profileId}=${selections[r.profileId] ?? "-"}`).join(",")}`
+}
+
+/**
+ * The saved profiles Refresh reprices: the borrowers already in the quote, with any edits saved since.
+ * Profiles added after the search aren't on screen, so they don't block a refresh; Search again picks them up.
+ * Null when one of the quoted borrowers was deleted down to nothing or saved incomplete.
+ */
+export function refreshableProfiles(quote: Quote, profiles: Profile[]): CompleteProfile[] | null {
+  const quoted = profiles.filter((p) => quote.rows.some((row) => row.profileId === p.id))
+  return quoted.length > 0 && quoted.every(isComplete) ? quoted : null
+}
+
+/** Prices these profiles as a fresh 60-second quote. Picks and the lock reset with it. */
+function newQuote(priced: CompleteProfile[], all: Profile[], searches: number) {
+  const speed = readSpeed()
+  const now = Date.now()
+  const move = searches === 0 ? 0 : randomMarketMove()
+  const rows = priced.map((profile) => ({
+    profileId: profile.id,
+    // Same letter as the profile's badge in the side panel
+    letter: profileLetter(all.indexOf(profile)),
+    profile: { ...profile },
+    rates: priceProfile(profile, move),
+  }))
+  return {
+    quote: { id: uid(), fetchedAt: now, expiresAt: now + QUOTE_WINDOW_MS / speed, speed, rows },
+    selections: {},
+    lockedKey: null,
+    searches: searches + 1,
+  }
 }
 
 function initialState(): QuoteState {
@@ -103,22 +136,15 @@ export const useQuoteStore = create<QuoteState & QuoteActions>()(
       search: () => {
         const { profiles, searches } = get()
         if (profiles.length === 0 || !profiles.every(isComplete)) return
-        const speed = readSpeed()
-        const now = Date.now()
-        const move = searches === 0 ? 0 : randomMarketMove()
-        const rows = profiles.filter(isComplete).map((profile, i) => ({
-          profileId: profile.id,
-          letter: profileLetter(i),
-          profile: { ...profile },
-          rates: priceProfile(profile, move),
-        }))
-        set({
-          quote: { id: uid(), fetchedAt: now, expiresAt: now + QUOTE_WINDOW_MS / speed, speed, rows },
-          selections: {},
-          lockedKey: null,
-          openProfileId: null,
-          searches: searches + 1,
-        })
+        set({ ...newQuote(profiles, profiles, searches), openProfileId: null })
+      },
+
+      // Leaves the side panel as it is: the broker may be part-way through editing a new profile.
+      refresh: () => {
+        const { quote, profiles, searches } = get()
+        const priced = quote && refreshableProfiles(quote, profiles)
+        if (!priced) return
+        set(newQuote(priced, profiles, searches))
       },
 
       selectRate: (profileId, term) => set({ selections: { ...get().selections, [profileId]: term } }),

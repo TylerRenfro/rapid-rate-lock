@@ -37,7 +37,7 @@ export function LockBar({
   let subtitle: string | null = null
   if (expired) {
     title = "Quotes expired"
-    // Refresh needs every profile complete, same as search; a profile edited since the search may not be.
+    // Refresh reprices the quoted borrowers as saved now, so one saved incomplete since the search blocks it.
     subtitle = canRefresh ? "Refresh for current rates, then pick and lock." : "Fill in and save every profile to refresh."
   } else if (count === 0) {
     title = total === 1 ? "No rate selected" : "No rates selected"

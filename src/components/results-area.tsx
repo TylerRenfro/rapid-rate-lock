@@ -3,8 +3,7 @@ import { ProfileRateCard } from "@/components/profile-rate-card"
 import { QuoteTimer } from "@/components/quote-timer"
 import { ResultsEmpty } from "@/components/results-empty"
 import { getQuoteStatus, useNow } from "@/lib/clock"
-import { isComplete } from "@/lib/profiles"
-import { useQuoteStore } from "@/lib/store"
+import { refreshableProfiles, useQuoteStore } from "@/lib/store"
 import type { Quote } from "@/lib/types"
 
 function ResultsView({ quote }: { quote: Quote }) {
@@ -15,8 +14,9 @@ function ResultsView({ quote }: { quote: Quote }) {
 
   const selections = useQuoteStore((s) => s.selections)
   const selectRate = useQuoteStore((s) => s.selectRate)
-  const search = useQuoteStore((s) => s.search)
-  const canRefresh = useQuoteStore((s) => s.profiles.length > 0 && s.profiles.every(isComplete))
+  const refresh = useQuoteStore((s) => s.refresh)
+  // Only the quoted borrowers count: a blank profile added since the search doesn't block a refresh
+  const canRefresh = useQuoteStore((s) => refreshableProfiles(quote, s.profiles) !== null)
 
   const count = quote.rows.length
   const noun = count === 1 ? "profile" : "profiles"
@@ -31,7 +31,7 @@ function ResultsView({ quote }: { quote: Quote }) {
             {count} {noun} · Pick one rate per profile, then lock in for 1 hour.
           </p>
         </div>
-        <QuoteTimer status={status} canRefresh={canRefresh} onRefresh={search} />
+        <QuoteTimer status={status} canRefresh={canRefresh} onRefresh={refresh} />
       </header>
 
       {/* Announce phase changes once, not every tick */}
@@ -58,7 +58,7 @@ function ResultsView({ quote }: { quote: Quote }) {
         <p className="text-xs leading-4 text-base-content/70">Each option: interest rate • monthly principal &amp; interest. Pick one per profile.</p>
       </div>
 
-      <LockBar quote={quote} expired={expired} canRefresh={canRefresh} onRefresh={search} />
+      <LockBar quote={quote} expired={expired} canRefresh={canRefresh} onRefresh={refresh} />
     </div>
   )
 }
