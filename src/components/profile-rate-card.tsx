@@ -1,11 +1,13 @@
+import { ProfileBadge } from "@/components/profile-badge"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { formatCurrency, formatTermQuote } from "@/lib/format"
-import { cardSummary } from "@/lib/profiles"
+import { cardSummary, loanDetails } from "@/lib/profiles"
 import { TERMS, type QuoteRow, type Term } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 /**
  * Figma: "Quick Quote / Profile rate card" (Layout=Row) holding three "Quick Quote / Rate option"s.
+ * Code adds a divider under the name, then a loan amount + quick facts row above the options (not yet in Figma).
  * Selected = checked radio only, no highlight. Expired = disabled radios, options dimmed to 60%.
  * Options sit side by side when the results area is wide enough, otherwise they stack.
  */
@@ -21,27 +23,47 @@ export function ProfileRateCard({
   onSelect: (term: Term) => void
 }) {
   const titleId = `rate-card-${row.profileId}`
+  const badgeId = `${titleId}-badge`
+  // Card and radio group read as "Profile A Jordan Lee"
+  const labelledBy = `${badgeId} ${titleId}`
 
   return (
     <article
-      aria-labelledby={titleId}
+      aria-labelledby={labelledBy}
       className="flex flex-col gap-4 rounded-box border border-base-300 bg-base-100 p-4 shadow-md @lg:p-5"
     >
-      <header className="flex items-center gap-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <h3 id={titleId} className="text-trim text-lg leading-7 font-semibold">
-            Profile {row.letter}
+      {/* Badge pins to the name line (28px) so it stays put when the summary wraps on narrow cards */}
+      <header className="flex min-w-0 items-start gap-3">
+        <ProfileBadge id={badgeId} letter={row.letter} className="mt-0.5" />
+        <div className="flex min-w-0 flex-1 flex-col">
+          {/* Quotes saved before customer name was required may not have one */}
+          <h3 id={titleId} className="truncate text-lg leading-7 font-semibold">
+            {row.profile.customerName.trim() || "Unnamed borrower"}
           </h3>
           <p className="text-sm leading-5">{cardSummary(row.profile)}</p>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-0.5">
-          <p className="text-xs leading-4">Loan amount</p>
-          <p className="text-trim text-lg leading-7 font-semibold">{formatCurrency(row.profile.loanAmount)}</p>
-        </div>
       </header>
 
+      <hr className="border-base-300" />
+
+      {/* Loan amount leads; quick facts sit to its right, wrapping beneath it on narrow cards */}
+      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
+        <dl className="flex flex-col gap-1">
+          <dt className="text-xs leading-4">Loan amount</dt>
+          <dd className="text-xl leading-7 font-semibold">{formatCurrency(row.profile.loanAmount)}</dd>
+        </dl>
+        <dl className="flex flex-wrap gap-x-6 gap-y-3">
+          {loanDetails(row.profile).map((d) => (
+            <div key={d.label} className="flex flex-col gap-1">
+              <dt className="text-xs leading-4">{d.label}</dt>
+              <dd className="text-sm leading-5 font-semibold whitespace-nowrap">{d.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
       <RadioGroup
-        aria-labelledby={titleId}
+        aria-labelledby={labelledBy}
         value={selected ? String(selected) : ""}
         onValueChange={(v) => onSelect(Number(v) as Term)}
         disabled={expired}

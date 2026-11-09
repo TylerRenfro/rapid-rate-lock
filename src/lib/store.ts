@@ -2,15 +2,18 @@ import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 import { QUOTE_WINDOW_MS, readSpeed } from "./clock"
 import { priceProfile, randomMarketMove } from "./pricing"
-import { MAX_PROFILES, createProfile, isComplete, profileLetter } from "./profiles"
-import type { Profile, Quote, Term } from "./types"
+import { MAX_PROFILES, createProfile, isComplete, profileLetter, profileValues } from "./profiles"
+import type { Profile, ProfileValues, Quote, Term } from "./types"
 import { uid } from "./uid"
 
 /** Everything lives under this one localStorage key. Bump the version to reset old saved state. */
 export const STORAGE_KEY = "rapid-rate-lock:v1"
 
 interface QuoteState {
+  /** Saved profiles: search, results, header previews and status icons all read these. */
   profiles: Profile[]
+  /** Unsaved edits per profile id (kept across reloads); Save / Update copies one onto its profile. */
+  drafts: Record<string, ProfileValues>
   /** The profile expanded in the side panel (one at a time), or null when all are collapsed */
   openProfileId: string | null
   quote: Quote | null
@@ -25,7 +28,10 @@ interface QuoteState {
 interface QuoteActions {
   addProfile: () => void
   removeProfile: (id: string) => void
-  updateProfile: (id: string, patch: Partial<Omit<Profile, "id">>) => void
+  /** Edit a profile's draft; the saved profile is untouched until saveProfile. */
+  editDraft: (id: string, patch: Partial<ProfileValues>) => void
+  /** Save / Update: commit the draft (if any), mark the profile saved and collapse it. */
+  saveProfile: (id: string) => void
   setOpenProfile: (id: string | null) => void
   search: () => void
   selectRate: (profileId: string, term: Term) => void
@@ -43,6 +49,7 @@ function initialState(): QuoteState {
   const first = createProfile()
   return {
     profiles: [first],
+    drafts: {},
     openProfileId: first.id,
     quote: null,
     selections: {},
@@ -64,16 +71,32 @@ export const useQuoteStore = create<QuoteState & QuoteActions>()(
       },
 
       removeProfile: (id) => {
-        const { profiles, openProfileId } = get()
+        const { profiles, drafts, openProfileId } = get()
         if (profiles.length <= 1) return
+        const { [id]: _removed, ...rest } = drafts
         set({
           profiles: profiles.filter((p) => p.id !== id),
+          drafts: rest,
           openProfileId: openProfileId === id ? null : openProfileId,
         })
       },
 
-      updateProfile: (id, patch) =>
-        set({ profiles: get().profiles.map((p) => (p.id === id ? { ...p, ...patch } : p)) }),
+      editDraft: (id, patch) => {
+        const { profiles, drafts } = get()
+        const profile = profiles.find((p) => p.id === id)
+        if (!profile) return
+        set({ drafts: { ...drafts, [id]: { ...(drafts[id] ?? profileValues(profile)), ...patch } } })
+      },
+
+      saveProfile: (id) => {
+        const { profiles, drafts } = get()
+        const { [id]: draft, ...rest } = drafts
+        set({
+          profiles: profiles.map((p) => (p.id === id ? { ...p, ...draft, saved: true } : p)),
+          drafts: rest,
+          openProfileId: null,
+        })
+      },
 
       setOpenProfile: (id) => set({ openProfileId: id }),
 
@@ -110,10 +133,23 @@ export const useQuoteStore = create<QuoteState & QuoteActions>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => localStorage),
-      partialize: ({ profiles, openProfileId, quote, selections, lockedKey, searches }) => ({
+      migrate: (persisted, version) => {
+        const state = persisted as QuoteState
+        if (version < 2) {
+          // v1 had no Save step (edits applied live), so any profile with something filled in counts as saved.
+          state.profiles = state.profiles.map((p) => ({
+            ...p,
+            saved: Object.values(profileValues(p)).some((v) => v !== "" && v !== null),
+          }))
+          state.drafts = {}
+        }
+        return state
+      },
+      partialize: ({ profiles, drafts, openProfileId, quote, selections, lockedKey, searches }) => ({
         profiles,
+        drafts,
         openProfileId,
         quote,
         selections,

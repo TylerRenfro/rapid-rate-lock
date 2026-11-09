@@ -5,15 +5,19 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatCurrency } from "@/lib/format"
-import { CREDIT_TIERS, LOAN_PURPOSES, OCCUPANCIES, PROPERTY_TYPES } from "@/lib/profiles"
+import { CREDIT_TIERS, LOAN_PURPOSES, OCCUPANCIES, PROPERTY_TYPES, hasUnsavedChanges } from "@/lib/profiles"
 import { useQuoteStore } from "@/lib/store"
-import type { Profile } from "@/lib/types"
+import type { Profile, ProfileValues } from "@/lib/types"
 
 function Field({ id, label, children }: { id: string; label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col">
-      <Label htmlFor={id} className="px-1 py-2 leading-5 font-normal">
+      <Label htmlFor={id} className="gap-0.5 px-1 py-2 leading-5 font-normal">
         {label}
+        {/* Visual cue only; the control itself carries required / aria-required for assistive tech. */}
+        <span aria-hidden="true" className="text-error">
+          *
+        </span>
       </Label>
       {children}
     </div>
@@ -38,7 +42,7 @@ function SelectField<T extends string>({
   return (
     <Field id={id} label={label}>
       <Select value={value} onValueChange={(v) => onChange(v as T)}>
-        <SelectTrigger id={id} className="w-full">
+        <SelectTrigger id={id} aria-required="true" className="w-full">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent position="popper">
@@ -60,6 +64,7 @@ function DownPaymentInput({ id, value, onChange }: { id: string; value: number |
   return (
     <Input
       id={id}
+      required
       inputMode="decimal"
       autoComplete="off"
       placeholder="0%"
@@ -78,19 +83,36 @@ function DownPaymentInput({ id, value, onChange }: { id: string; value: number |
 
 const tierOptions = CREDIT_TIERS.map((t) => ({ value: t, label: t }))
 
+/**
+ * Edits go to the profile's draft; Save (never saved) / Update (saved) commits them and collapses the card.
+ * Enter in a text field saves too. noValidate: saving an incomplete profile is allowed (it then shows the warning icon).
+ */
 export function ProfileFields({ profile, canRemove }: { profile: Profile; canRemove: boolean }) {
-  const updateProfile = useQuoteStore((s) => s.updateProfile)
+  const draft = useQuoteStore((s) => s.drafts[profile.id])
+  const editDraft = useQuoteStore((s) => s.editDraft)
+  const saveProfile = useQuoteStore((s) => s.saveProfile)
   const removeProfile = useQuoteStore((s) => s.removeProfile)
-  const update = (patch: Partial<Omit<Profile, "id">>) => updateProfile(profile.id, patch)
+  const values = draft ?? profile
+  const update = (patch: Partial<ProfileValues>) => editDraft(profile.id, patch)
   const id = (field: string) => `${profile.id}-${field}`
+  // Update is only useful once something has changed; a never-saved profile can always be saved.
+  const canSave = !profile.saved || hasUnsavedChanges(profile, draft)
 
   return (
-    <div className="flex flex-col gap-2">
+    <form
+      noValidate
+      className="flex flex-col gap-2"
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (canSave) saveProfile(profile.id)
+      }}
+    >
       <Field id={id("name")} label="Customer name">
         <Input
           id={id("name")}
+          required
           autoComplete="off"
-          value={profile.customerName}
+          value={values.customerName}
           onChange={(e) => update({ customerName: e.target.value })}
         />
       </Field>
@@ -99,7 +121,7 @@ export function ProfileFields({ profile, canRemove }: { profile: Profile; canRem
         id={id("credit")}
         label="Credit score"
         placeholder="Select tier"
-        value={profile.creditTier}
+        value={values.creditTier}
         options={tierOptions}
         onChange={(creditTier) => update({ creditTier })}
       />
@@ -108,7 +130,7 @@ export function ProfileFields({ profile, canRemove }: { profile: Profile; canRem
         id={id("purpose")}
         label="Loan purpose"
         placeholder="Select"
-        value={profile.loanPurpose}
+        value={values.loanPurpose}
         options={LOAN_PURPOSES}
         onChange={(loanPurpose) => update({ loanPurpose })}
       />
@@ -116,10 +138,11 @@ export function ProfileFields({ profile, canRemove }: { profile: Profile; canRem
       <Field id={id("amount")} label="Loan amount">
         <Input
           id={id("amount")}
+          required
           inputMode="numeric"
           autoComplete="off"
           placeholder="$0"
-          value={profile.loanAmount ? formatCurrency(profile.loanAmount) : ""}
+          value={values.loanAmount ? formatCurrency(values.loanAmount) : ""}
           onChange={(e) => {
             const digits = e.target.value.replace(/\D/g, "").slice(0, 8)
             update({ loanAmount: digits ? Number(digits) : null })
@@ -128,16 +151,17 @@ export function ProfileFields({ profile, canRemove }: { profile: Profile; canRem
       </Field>
 
       <Field id={id("down")} label="Down payment">
-        <DownPaymentInput id={id("down")} value={profile.downPayment} onChange={(downPayment) => update({ downPayment })} />
+        <DownPaymentInput id={id("down")} value={values.downPayment} onChange={(downPayment) => update({ downPayment })} />
       </Field>
 
       <Field id={id("zip")} label="ZIP code">
         <Input
           id={id("zip")}
+          required
           inputMode="numeric"
           autoComplete="postal-code"
           placeholder="e.g. 78701"
-          value={profile.zip}
+          value={values.zip}
           onChange={(e) => update({ zip: e.target.value.replace(/\D/g, "").slice(0, 5) })}
         />
       </Field>
@@ -146,7 +170,7 @@ export function ProfileFields({ profile, canRemove }: { profile: Profile; canRem
         id={id("occupancy")}
         label="Occupancy"
         placeholder="Select"
-        value={profile.occupancy}
+        value={values.occupancy}
         options={OCCUPANCIES}
         onChange={(occupancy) => update({ occupancy })}
       />
@@ -155,17 +179,22 @@ export function ProfileFields({ profile, canRemove }: { profile: Profile; canRem
         id={id("property")}
         label="Property type"
         placeholder="Select"
-        value={profile.propertyType}
+        value={values.propertyType}
         options={PROPERTY_TYPES}
         onChange={(propertyType) => update({ propertyType })}
       />
 
-      {canRemove && (
-        <Button variant="ghost" className="mt-2 self-start" onClick={() => removeProfile(profile.id)}>
-          <TrashIcon />
-          Remove profile
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <Button type="submit" disabled={!canSave}>
+          {profile.saved ? "Update" : "Save"}
         </Button>
-      )}
-    </div>
+        {canRemove && (
+          <Button type="button" variant="ghost" onClick={() => removeProfile(profile.id)}>
+            <TrashIcon />
+            Delete
+          </Button>
+        )}
+      </div>
+    </form>
   )
 }

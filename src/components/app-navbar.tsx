@@ -1,10 +1,11 @@
 import { AccountMenu } from "@/components/account-menu"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const NAV_ITEMS = ["Dashboard", "Quick Quote", "Pipeline", "Compliance"] as const
 const CURRENT = "Quick Quote"
 
 /** Figma: library Navbar with "Slot / 💎 Quick Quote nav" (center) and "Slot / 💎 Broker" (end),
- * the latter now an account menu. */
+ * the latter now an account menu. The section nav uses shadcn Tabs (line variant). */
 export function AppNavbar() {
   return (
     <header className="flex min-h-16 flex-wrap items-center border-b border-base-300 bg-base-100 p-2">
@@ -19,34 +20,32 @@ export function AppNavbar() {
 
       <nav
         aria-label="Main"
-        className="order-last w-full overflow-x-auto [scrollbar-width:none] md:order-none md:w-auto [&::-webkit-scrollbar]:hidden"
+        className="order-last w-full overflow-x-auto pt-1 pb-1.5 [scrollbar-width:none] md:order-none md:w-auto [&::-webkit-scrollbar]:hidden"
       >
-        <ul className="mx-auto flex w-max items-center gap-0.5 py-1 sm:gap-1 md:py-0">
-          {NAV_ITEMS.map((item) =>
-            item === CURRENT ? (
-              <li key={item}>
-                <a
-                  href="/"
-                  aria-current="page"
-                  className="flex h-7 items-center rounded-lg bg-neutral px-2 sm:px-3 text-sm leading-5 text-neutral-content"
-                >
-                  {item}
-                </a>
-              </li>
-            ) : (
-              <li key={item}>
-                {/* Other sections aren't part of this prototype */}
-                <span
+        {/* Value is fixed: other sections aren't part of this prototype */}
+        <Tabs value={CURRENT} onValueChange={() => {}} activationMode="manual">
+          <TabsList variant="line" className="mx-auto gap-0 sm:gap-2">
+            {NAV_ITEMS.map((item) =>
+              item === CURRENT ? (
+                <TabsTrigger key={item} value={item} asChild className="px-1.5 sm:px-3">
+                  <a href="/" aria-current="page">
+                    {item}
+                  </a>
+                </TabsTrigger>
+              ) : (
+                <TabsTrigger
+                  key={item}
+                  value={item}
                   aria-disabled="true"
                   title="Not part of this prototype"
-                  className="flex h-7 cursor-default items-center rounded-lg px-2 sm:px-3 text-sm leading-5"
+                  className="cursor-default px-1.5 hover:text-foreground/60 sm:px-3"
                 >
                   {item}
-                </span>
-              </li>
-            ),
-          )}
-        </ul>
+                </TabsTrigger>
+              ),
+            )}
+          </TabsList>
+        </Tabs>
       </nav>
 
       <div className="flex items-center justify-end md:flex-1">

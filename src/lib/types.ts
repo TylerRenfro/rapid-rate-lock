@@ -18,9 +18,14 @@ export type LoanPurpose = "purchase" | "rate-term" | "cash-out"
 export type Occupancy = "primary" | "second-home" | "investment"
 export type PropertyType = "single-family" | "townhouse" | "condo" | "multi-unit"
 
-/** A borrower profile as edited in the side panel. Empty string / null = not filled in yet. */
+/**
+ * A borrower profile as last saved from the side panel. Empty string / null = not filled in.
+ * Edits in progress live in the store's drafts until Save / Update copies them here.
+ */
 export interface Profile {
   id: string
+  /** False until the broker first saves it; unsaved profiles show no status icon. */
+  saved: boolean
   customerName: string
   creditTier: CreditTier | ""
   loanPurpose: LoanPurpose | ""
@@ -31,7 +36,10 @@ export interface Profile {
   propertyType: PropertyType | ""
 }
 
-/** A profile with every pricing field filled in (customer name stays optional). */
+/** The editable fields of a profile; also the shape of an unsaved draft. */
+export type ProfileValues = Omit<Profile, "id" | "saved">
+
+/** A profile with every field filled in, customer name included. */
 export interface CompleteProfile extends Profile {
   creditTier: CreditTier
   loanPurpose: LoanPurpose

@@ -46,6 +46,7 @@
   --color-base-content: var(--base-content);
   --color-neutral: var(--neutral);
   --color-neutral-content: var(--neutral-content);
+  --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
   --color-error-content: var(--error-content);
@@ -73,6 +74,8 @@
   --primary-content: #ffffff;
   --neutral: #2a3b4c;
   --neutral-content: #e6edf3;
+  /* Placeholder until synced with the library's d-color/status/success/bg; darkened like warning/error for AA text contrast. */
+  --success: #1f7a4d;
   --warning: #c76e00;
   --error: #c42b3b;
   --error-content: #ffffff;

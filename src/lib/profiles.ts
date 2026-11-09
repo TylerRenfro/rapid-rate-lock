@@ -1,4 +1,14 @@
-import { CREDIT_TIERS, type CompleteProfile, type LoanPurpose, type Occupancy, type Profile, type PropertyType, type QuoteRow } from "./types"
+import {
+  CREDIT_TIERS,
+  type CompleteProfile,
+  type LoanPurpose,
+  type Occupancy,
+  type Profile,
+  type ProfileValues,
+  type PropertyType,
+  type QuoteRow,
+} from "./types"
+import { formatCurrency } from "./format"
 import { uid } from "./uid"
 
 export const MAX_PROFILES = 3
@@ -27,6 +37,7 @@ export const PROPERTY_TYPES: { value: PropertyType; label: string; phrase: strin
 export function createProfile(): Profile {
   return {
     id: uid(),
+    saved: false,
     customerName: "",
     creditTier: "",
     loanPurpose: "",
@@ -40,6 +51,7 @@ export function createProfile(): Profile {
 
 export function isComplete(p: Profile): p is CompleteProfile {
   return (
+    p.customerName.trim() !== "" &&
     p.creditTier !== "" &&
     p.loanPurpose !== "" &&
     p.loanAmount !== null &&
@@ -53,19 +65,53 @@ export function isComplete(p: Profile): p is CompleteProfile {
   )
 }
 
+/** The editable fields of a profile (drops id and saved). */
+export function profileValues(p: Profile): ProfileValues {
+  const { id: _id, saved: _saved, ...values } = p
+  return values
+}
+
+/** True when a draft exists and differs from the saved profile in any field. */
+export function hasUnsavedChanges(p: Profile, draft: ProfileValues | undefined) {
+  if (!draft) return false
+  return (Object.keys(draft) as (keyof ProfileValues)[]).some((k) => draft[k] !== p[k])
+}
+
 export const profileLetter = (index: number) => String.fromCharCode(65 + index)
 
 export const purposeLabel = (v: LoanPurpose) => LOAN_PURPOSES.find((o) => o.value === v)?.label ?? v
 
-/** "Profile A · 780+ · 20% down" (collapsed panel title) */
-export function collapsedTitle(p: Profile, letter: string) {
-  if (!isComplete(p)) return `Profile ${letter} · Incomplete`
-  return `Profile ${letter} · ${p.creditTier} · ${p.downPayment}% down`
+/**
+ * Panel header preview, built from whatever is filled in so far:
+ * name = "Jordan Lee" (empty until typed), detail = "$450,000 · Single-family" (either part may be missing).
+ */
+export function profilePreview(p: Profile) {
+  const property = PROPERTY_TYPES.find((o) => o.value === p.propertyType)?.label
+  const detail = [p.loanAmount ? formatCurrency(p.loanAmount) : null, property].filter(Boolean).join(" · ")
+  return { name: p.customerName.trim(), detail }
 }
 
 /** "780+ credit · 20% down · Purchase" (rate card subtitle) */
 export function cardSummary(p: CompleteProfile) {
   return `${p.creditTier} credit · ${p.downPayment}% down · ${purposeLabel(p.loanPurpose)}`
+}
+
+/**
+ * Rate card quick facts shown beside the loan amount. Property value and LTV are derived from
+ * loan amount + down payment (on refinances the down payment field stands in for equity).
+ */
+export function loanDetails(p: CompleteProfile) {
+  const ltv = Math.round((100 - p.downPayment) * 10) / 10
+  return [
+    {
+      label: p.loanPurpose === "purchase" ? "Purchase price" : "Home value",
+      value: formatCurrency(p.loanAmount / (ltv / 100)),
+    },
+    { label: "LTV", value: `${ltv}%` },
+    { label: "Occupancy", value: OCCUPANCIES.find((o) => o.value === p.occupancy)?.label ?? p.occupancy },
+    { label: "Property", value: PROPERTY_TYPES.find((o) => o.value === p.propertyType)?.label ?? p.propertyType },
+    { label: "ZIP", value: p.zip },
+  ]
 }
 
 /** "All profiles: purchase, primary residence, single-family." when every row shares them. */
