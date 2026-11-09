@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { cn } from "cn"
 
 const USER = { name: "Tyler Renfro", initials: "TR", role: "Broker" }
 
@@ -19,23 +20,26 @@ const ITEMS = [
   { label: "Settings", icon: Cog6ToothIcon },
 ] as const
 
-function UserAvatar({ className }: { className?: string }) {
+function UserAvatar({ className, fallbackClassName }: { className?: string; fallbackClassName?: string }) {
   return (
     <Avatar className={className ?? "size-9 after:border-transparent"}>
-      <AvatarFallback className="bg-neutral text-sm font-semibold text-neutral-content">{USER.initials}</AvatarFallback>
+      <AvatarFallback className={cn("bg-neutral text-sm font-semibold text-neutral-content", fallbackClassName)}>
+        {USER.initials}
+      </AvatarFallback>
     </Avatar>
   )
 }
 
-/** Outlined pill (avatar · name · chevron) that opens the account menu. Name hides on small screens. */
+/** Outlined pill (avatar · name · chevron) that opens the account menu. Name hides on small screens.
+ * Styled for the primary-filled navbar: translucent primary-foreground border, hover and avatar. */
 export function AccountMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Account menu for ${USER.name}`}
-        className="group/account flex h-11 items-center gap-2 rounded-full border border-input bg-base-100 py-1 pr-2.5 pl-1 text-sm leading-5 font-semibold transition-colors outline-none hover:bg-base-200 focus-visible:ring-3 focus-visible:ring-ring/50 data-[state=open]:bg-base-200 sm:pr-3"
+        className="group/account flex h-11 items-center gap-2 rounded-full border border-primary-foreground/25 bg-transparent py-1 pr-2.5 pl-1 text-sm leading-5 font-semibold text-primary-foreground transition-colors outline-none hover:bg-primary-foreground/10 focus-visible:ring-3 focus-visible:ring-primary-foreground/50 data-[state=open]:bg-primary-foreground/10 sm:pr-3"
       >
-        <UserAvatar />
+        <UserAvatar fallbackClassName="bg-primary-foreground/15 text-primary-foreground" />
         <span className="hidden whitespace-nowrap sm:inline">{USER.name}</span>
         <ChevronDownIcon
           aria-hidden="true"
