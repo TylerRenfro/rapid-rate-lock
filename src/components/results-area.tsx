@@ -31,7 +31,7 @@ function ResultsView({ quote }: { quote: Quote }) {
             {count} {noun} · Pick one rate per profile, then lock in for 1 hour.
           </p>
         </div>
-        <QuoteTimer status={status} />
+        <QuoteTimer status={status} canRefresh={canRefresh} onRefresh={search} />
       </header>
 
       {/* Announce phase changes once, not every tick */}

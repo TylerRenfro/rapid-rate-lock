@@ -1,4 +1,5 @@
-import { ExclamationTriangleIcon } from "@heroicons/react/20/solid"
+import { ArrowPathIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid"
+import { Button } from "@/components/ui/button"
 import type { QuoteStatus } from "@/lib/clock"
 import { formatCountdown } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -55,19 +56,23 @@ function RadialCountdown({ status }: { status: QuoteStatus }) {
   )
 }
 
-const COPY = {
-  live: { label: "Quotes expire in", helper: "All rates share one 60-second window" },
-  warning: { label: "Quotes expiring soon", helper: "All rates share one 60-second window" },
-  expired: { label: "Quotes expired", helper: "Refresh to get current pricing" },
-} as const
+const LABEL = { live: "Quotes expire in", warning: "Quotes expiring soon", expired: "Quotes expired" } as const
 
 /**
  * Figma: "Quick Quote / Quote timer" — Live (>15s), Warning (<15s), Expired.
- * One layout for all three, so the header never changes size; expiry freezes the ring at 0:00.
- * Refreshing lives in the lock bar, where the broker is when time runs out.
+ * One layout for all three, so the header never changes size; expiry freezes the ring at 0:00
+ * and swaps the helper line for a small Refresh text button. The lock bar's Refresh button covers
+ * narrow screens, where the timer has usually scrolled out of view by the time quotes expire.
  */
-export function QuoteTimer({ status }: { status: QuoteStatus }) {
-  const { label, helper } = COPY[status.phase]
+export function QuoteTimer({
+  status,
+  canRefresh,
+  onRefresh,
+}: {
+  status: QuoteStatus
+  canRefresh: boolean
+  onRefresh: () => void
+}) {
   const expired = status.phase === "expired"
 
   return (
@@ -79,9 +84,24 @@ export function QuoteTimer({ status }: { status: QuoteStatus }) {
       <div className="flex flex-col items-start gap-0.5 @2xl:items-end">
         <p className={cn("flex items-center gap-1 text-sm leading-5 font-semibold", expired && "text-error")}>
           {status.phase === "warning" && <ExclamationTriangleIcon aria-hidden="true" className="size-4 shrink-0 text-warning" />}
-          {label}
+          {LABEL[status.phase]}
         </p>
-        <p className="text-xs leading-4">{helper}</p>
+        {expired ? (
+          // 24px tall for the WCAG 2.2 target size; the 80px ring still sets the row height, so nothing shifts.
+          // Flush left/right (px-0) so it lines up with the label; disabled stays text-only, not a grey pill.
+          <Button
+            variant="link"
+            size="xs"
+            className="h-6 px-0 disabled:bg-transparent disabled:text-base-content/40"
+            disabled={!canRefresh}
+            onClick={onRefresh}
+          >
+            <ArrowPathIcon />
+            Refresh all rates
+          </Button>
+        ) : (
+          <p className="text-xs leading-4">All rates share one 60-second window</p>
+        )}
       </div>
       <RadialCountdown status={status} />
     </div>
