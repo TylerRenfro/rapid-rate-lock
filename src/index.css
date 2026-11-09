@@ -1,0 +1,124 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/inter";
+@import "@fontsource/roboto/latin-600.css";
+
+/* Lending Portal has a light theme only: keep shadcn's dark: styles behind a .dark class we never set,
+   instead of Tailwind's default prefers-color-scheme media query. */
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Theme: Figma "Lending Portal" library (daisyUI kit, theme mode "Lending Portal").
+ * Raw tokens keep their Figma variable names (d-color/base/100 -> --base-100, etc.)
+ * and are mapped onto shadcn's semantic variables below.
+ */
+
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-sans);
+  --font-logo: "Roboto", var(--font-sans);
+
+  /* shadcn semantic colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Lending Portal tokens, named after the Figma variables */
+  --color-base-100: var(--base-100);
+  --color-base-200: var(--base-200);
+  --color-base-300: var(--base-300);
+  --color-base-content: var(--base-content);
+  --color-neutral: var(--neutral);
+  --color-neutral-content: var(--neutral-content);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-error-content: var(--error-content);
+
+  /* d-borderRadius/btn = 8px drives shadcn's --radius; d-borderRadius/box = 16px */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-box: 1rem;
+}
+
+:root {
+  color-scheme: light;
+
+  /* d-color/* */
+  --base-100: #f8fafc;
+  --base-200: #eef2f6;
+  --base-300: #dce3ea;
+  --base-content: #0f2133;
+  --primary-bg: #142b3f;
+  --primary-content: #ffffff;
+  --neutral: #2a3b4c;
+  --neutral-content: #e6edf3;
+  --warning: #c76e00;
+  --error: #c42b3b;
+  --error-content: #ffffff;
+  /* u-color/text-input (placeholder) */
+  --text-input: #9ca3af;
+
+  /* shadcn semantic mapping */
+  --background: var(--base-200);
+  --foreground: var(--base-content);
+  --card: var(--base-100);
+  --card-foreground: var(--base-content);
+  --popover: var(--base-100);
+  --popover-foreground: var(--base-content);
+  --primary: var(--primary-bg);
+  --primary-foreground: var(--primary-content);
+  --secondary: var(--base-200);
+  --secondary-foreground: var(--base-content);
+  --muted: var(--base-200);
+  --muted-foreground: var(--text-input);
+  --accent: var(--base-200);
+  --accent-foreground: var(--base-content);
+  --destructive: var(--error);
+  --border: var(--base-300);
+  /* input stroke = base-content at u-opacity/stroke/20% */
+  --input: rgb(15 33 51 / 0.2);
+  --ring: var(--primary-bg);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* Figma text layers use "text-box-trim: cap / alphabetic"; older browsers just ignore it. */
+@utility text-trim {
+  text-box: trim-both cap alphabetic;
+}

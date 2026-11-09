@@ -1,0 +1,41 @@
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline"
+import { isComplete, profileLetter, profilesPhrase } from "@/lib/profiles"
+import { useQuoteStore } from "@/lib/store"
+
+/** Figma: "Quick Quote / Empty state" — frame 01 (nothing ready) and frame 02 (profiles ready). */
+export function ResultsEmpty() {
+  const profiles = useQuoteStore((s) => s.profiles)
+  const ready = profiles.length > 0 && profiles.every(isComplete)
+  const count = profiles.length
+
+  return (
+    <div className="flex flex-1 items-center justify-center py-8 lg:p-8">
+      <div className="flex max-w-[520px] flex-col items-center gap-4 p-2 text-center sm:p-6">
+        <span className="rounded-full bg-base-300 p-4">
+          <MagnifyingGlassIcon className="size-8" />
+        </span>
+        {ready ? (
+          <>
+            <h2 className="text-2xl leading-8 font-bold">
+              {count} {count === 1 ? "profile" : "profiles"} ready to compare
+            </h2>
+            <p className="text-base leading-7">
+              Run a search to pull live 15, 20 and 30-year fixed rates for{" "}
+              {profilesPhrase(profiles.map((_, i) => profileLetter(i)))}. Quotes stay live for 60 seconds once
+              results load.
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 className="text-2xl leading-8 font-bold">Search for Rapid Rates</h2>
+            <p className="text-base leading-7">
+              Build up to 3 borrower profiles in the panel <span className="lg:hidden">above</span>
+              <span className="hidden lg:inline">on the left</span>, then search to compare 15, 20 and 30-year fixed
+              rates side by side. Quotes are live for 60 seconds once results load.
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
