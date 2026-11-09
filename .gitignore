@@ -28,3 +28,4 @@ references/
 
 # Vercel
 .vercel
+.env*
