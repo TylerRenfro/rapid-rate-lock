@@ -1,4 +1,3 @@
-import { ArrowRightStartOnRectangleIcon, Cog6ToothIcon, UserCircleIcon } from "@heroicons/react/16/solid"
 import { ChevronDownIcon } from "@heroicons/react/20/solid"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -10,17 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ACCOUNT_ITEMS, SIGN_OUT, USER } from "@/lib/account"
 import { cn } from "cn"
 
-const USER = { name: "Tyler Renfro", initials: "TR", role: "Broker" }
-
-// Account pages aren't part of this prototype: items just close the menu.
-const ITEMS = [
-  { label: "Profile", icon: UserCircleIcon },
-  { label: "Settings", icon: Cog6ToothIcon },
-] as const
-
-function UserAvatar({ className, fallbackClassName }: { className?: string; fallbackClassName?: string }) {
+export function UserAvatar({ className, fallbackClassName }: { className?: string; fallbackClassName?: string }) {
   return (
     <Avatar className={className ?? "size-9 after:border-transparent"}>
       <AvatarFallback className={cn("bg-neutral text-sm font-semibold text-neutral-content", fallbackClassName)}>
@@ -30,17 +22,17 @@ function UserAvatar({ className, fallbackClassName }: { className?: string; fall
   )
 }
 
-/** Outlined pill (avatar · name · chevron) that opens the account menu. Name hides on small screens.
+/** Outlined pill (avatar · name · chevron) that opens the account menu. Shown from md up (below md the account lives in the hamburger panel); the name appears from lg.
  * Styled for the primary-filled navbar: translucent primary-foreground border, hover and avatar. */
 export function AccountMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Account menu for ${USER.name}`}
-        className="group/account flex h-11 items-center gap-2 rounded-full border border-primary-foreground/25 bg-transparent py-1 pr-2.5 pl-1 text-sm leading-5 font-semibold text-primary-foreground transition-colors outline-none hover:bg-primary-foreground/10 focus-visible:ring-3 focus-visible:ring-primary-foreground/50 data-[state=open]:bg-primary-foreground/10 sm:pr-3"
+        className="group/account flex h-11 items-center gap-2 rounded-full border border-primary-foreground/25 bg-transparent py-1 pr-2.5 pl-1 text-sm leading-5 font-semibold text-primary-foreground transition-colors outline-none hover:bg-primary-foreground/10 focus-visible:ring-3 focus-visible:ring-primary-foreground/50 data-[state=open]:bg-primary-foreground/10 lg:pr-3"
       >
         <UserAvatar fallbackClassName="bg-primary-foreground/15 text-primary-foreground" />
-        <span className="hidden whitespace-nowrap sm:inline">{USER.name}</span>
+        <span className="hidden whitespace-nowrap lg:inline">{USER.name}</span>
         <ChevronDownIcon
           aria-hidden="true"
           className="size-5 shrink-0 transition-transform duration-200 group-data-[state=open]/account:rotate-180 motion-reduce:transition-none"
@@ -57,7 +49,7 @@ export function AccountMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="-mx-1.5 my-1.5" />
         <DropdownMenuGroup>
-          {ITEMS.map(({ label, icon: Icon }) => (
+          {ACCOUNT_ITEMS.map(({ label, icon: Icon }) => (
             <DropdownMenuItem key={label} className="gap-2.5 px-2 py-1.5">
               <Icon aria-hidden="true" />
               {label}
@@ -66,8 +58,8 @@ export function AccountMenu() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator className="-mx-1.5 my-1.5" />
         <DropdownMenuItem className="gap-2.5 px-2 py-1.5">
-          <ArrowRightStartOnRectangleIcon aria-hidden="true" />
-          Sign out
+          <SIGN_OUT.icon aria-hidden="true" />
+          {SIGN_OUT.label}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
