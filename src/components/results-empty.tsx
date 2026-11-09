@@ -20,18 +20,17 @@ export function ResultsEmpty() {
               {count} {count === 1 ? "profile" : "profiles"} ready to compare
             </h2>
             <p className="text-base leading-7">
-              Run a search to pull live 15, 20 and 30-year fixed rates for{" "}
-              <span className="whitespace-nowrap">{profilesPhrase(profiles.map((_, i) => profileLetter(i)))}</span>. Quotes stay live for 60 seconds once
-              results load.
+              Search to compare 15, 20 and 30-year fixed rates for{" "}
+              <span className="whitespace-nowrap">{profilesPhrase(profiles.map((_, i) => profileLetter(i)))}</span>.
+              Quotes stay live for 60 seconds.
             </p>
           </>
         ) : (
           <>
             <h2 className="text-2xl leading-8 font-bold">Search for Rapid Rates</h2>
             <p className="text-base leading-7">
-              Build up to 3 borrower profiles in the panel <span className="lg:hidden">above</span>
-              <span className="hidden lg:inline">on the left</span>, then search to compare 15, 20 and 30-year fixed
-              rates side by side. Quotes are live for 60 seconds once results load.
+              Build up to 3 borrower profiles, then search to compare 15, 20 and 30-year fixed rates. Quotes stay live
+              for 60 seconds.
             </p>
           </>
         )}
