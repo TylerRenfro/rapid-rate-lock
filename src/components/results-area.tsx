@@ -3,7 +3,7 @@ import { ProfileRateCard } from "@/components/profile-rate-card"
 import { QuoteTimer } from "@/components/quote-timer"
 import { ResultsEmpty } from "@/components/results-empty"
 import { getQuoteStatus, useNow } from "@/lib/clock"
-import { isComplete, sharedScenarioNote } from "@/lib/profiles"
+import { isComplete } from "@/lib/profiles"
 import { useQuoteStore } from "@/lib/store"
 import type { Quote } from "@/lib/types"
 
@@ -20,7 +20,6 @@ function ResultsView({ quote }: { quote: Quote }) {
 
   const count = quote.rows.length
   const noun = count === 1 ? "profile" : "profiles"
-  const note = sharedScenarioNote(quote.rows)
 
   return (
     <div className="flex flex-col gap-6">
@@ -58,10 +57,7 @@ function ResultsView({ quote }: { quote: Quote }) {
             />
           ))}
         </div>
-        <p className="text-xs leading-4">
-          Each option: interest rate • monthly principal &amp; interest. Pick one per profile.
-          {note && ` ${note}`}
-        </p>
+        <p className="text-xs leading-4">Each option: interest rate • monthly principal &amp; interest. Pick one per profile.</p>
       </div>
 
       <LockBar quote={quote} expired={expired} />

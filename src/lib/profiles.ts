@@ -6,7 +6,6 @@ import {
   type Profile,
   type ProfileValues,
   type PropertyType,
-  type QuoteRow,
 } from "./types"
 import { formatCurrency } from "./format"
 import { uid } from "./uid"
@@ -21,17 +20,17 @@ export const LOAN_PURPOSES: { value: LoanPurpose; label: string }[] = [
   { value: "cash-out", label: "Cash-out refinance" },
 ]
 
-export const OCCUPANCIES: { value: Occupancy; label: string; phrase: string }[] = [
-  { value: "primary", label: "Primary", phrase: "primary residence" },
-  { value: "second-home", label: "Second home", phrase: "second home" },
-  { value: "investment", label: "Investment", phrase: "investment property" },
+export const OCCUPANCIES: { value: Occupancy; label: string }[] = [
+  { value: "primary", label: "Primary" },
+  { value: "second-home", label: "Second home" },
+  { value: "investment", label: "Investment" },
 ]
 
-export const PROPERTY_TYPES: { value: PropertyType; label: string; phrase: string }[] = [
-  { value: "single-family", label: "Single-family", phrase: "single-family" },
-  { value: "townhouse", label: "Townhouse", phrase: "townhouse" },
-  { value: "condo", label: "Condo", phrase: "condo" },
-  { value: "multi-unit", label: "2–4 unit", phrase: "2–4 unit" },
+export const PROPERTY_TYPES: { value: PropertyType; label: string }[] = [
+  { value: "single-family", label: "Single-family" },
+  { value: "townhouse", label: "Townhouse" },
+  { value: "condo", label: "Condo" },
+  { value: "multi-unit", label: "2–4 unit" },
 ]
 
 export function createProfile(): Profile {
@@ -112,22 +111,6 @@ export function loanDetails(p: CompleteProfile) {
     { label: "Property", value: PROPERTY_TYPES.find((o) => o.value === p.propertyType)?.label ?? p.propertyType },
     { label: "ZIP", value: p.zip },
   ]
-}
-
-/** "All profiles: purchase, primary residence, single-family." when every row shares them. */
-export function sharedScenarioNote(rows: QuoteRow[]) {
-  if (rows.length < 2) return null
-  const [first] = rows
-  const same = rows.every(
-    (r) =>
-      r.profile.loanPurpose === first.profile.loanPurpose &&
-      r.profile.occupancy === first.profile.occupancy &&
-      r.profile.propertyType === first.profile.propertyType,
-  )
-  if (!same) return null
-  const occupancy = OCCUPANCIES.find((o) => o.value === first.profile.occupancy)?.phrase
-  const property = PROPERTY_TYPES.find((o) => o.value === first.profile.propertyType)?.phrase
-  return `All profiles: ${purposeLabel(first.profile.loanPurpose).toLowerCase()}, ${occupancy}, ${property}.`
 }
 
 /** ["A"] → "Profile A", ["A","B"] → "Profiles A and B", ["A","B","C"] → "Profiles A, B and C" */

@@ -40,23 +40,27 @@ export function ProfileRateCard({
           <h3 id={titleId} className="truncate text-lg leading-7 font-semibold">
             {row.profile.customerName.trim() || "Unnamed borrower"}
           </h3>
-          <p className="text-sm leading-5">{cardSummary(row.profile)}</p>
+          <p className="text-sm leading-5 text-pretty">{cardSummary(row.profile)}</p>
         </div>
       </header>
 
       <hr className="border-base-300" />
 
-      {/* Loan amount leads; quick facts sit to its right, wrapping beneath it on narrow cards */}
-      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
+      {/*
+        Loan amount leads; quick facts sit to its right and share its last baseline.
+        Narrow: facts wrap beneath in aligned columns. Wide: the row snaps to the options' 3-column grid
+        (loan amount over 15-yr, facts in 5 equal columns over 20/30-yr) so values line up from card to card.
+      */}
+      <div className="flex flex-wrap items-baseline-last justify-between gap-x-8 gap-y-3 @3xl:grid @3xl:grid-cols-3 @3xl:gap-3">
         <dl className="flex flex-col gap-1">
-          <dt className="text-xs leading-4">Loan amount</dt>
-          <dd className="text-xl leading-7 font-semibold">{formatCurrency(row.profile.loanAmount)}</dd>
+          <dt className="text-xs leading-4 text-base-content/70">Loan amount</dt>
+          <dd className="text-xl leading-7 font-semibold tabular-nums">{formatCurrency(row.profile.loanAmount)}</dd>
         </dl>
-        <dl className="flex flex-wrap gap-x-6 gap-y-3">
+        <dl className="grid grid-cols-[repeat(3,max-content)] gap-x-6 gap-y-3 @lg:flex @lg:flex-wrap @3xl:col-span-2 @3xl:grid @3xl:grid-cols-5 @3xl:gap-x-4">
           {loanDetails(row.profile).map((d) => (
-            <div key={d.label} className="flex flex-col gap-1">
-              <dt className="text-xs leading-4">{d.label}</dt>
-              <dd className="text-sm leading-5 font-semibold whitespace-nowrap">{d.value}</dd>
+            <div key={d.label} className="flex min-w-0 flex-col gap-1">
+              <dt className="text-xs leading-4 text-base-content/70">{d.label}</dt>
+              <dd className="text-sm leading-5 font-medium whitespace-nowrap tabular-nums">{d.value}</dd>
             </div>
           ))}
         </dl>
@@ -77,13 +81,13 @@ export function ProfileRateCard({
               htmlFor={optionId}
               className={cn(
                 "flex min-h-14 items-center gap-3 rounded-lg border border-base-300 bg-base-100 px-4 py-3 transition-colors @3xl:h-18 @3xl:py-4",
-                expired ? "opacity-60" : "cursor-pointer hover:bg-base-200/60",
+                expired ? "opacity-60" : "cursor-pointer hover:bg-base-200/60 active:bg-base-200",
               )}
             >
               <RadioGroupItem id={optionId} value={String(term)} />
               <span className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-3 gap-y-0.5 @3xl:flex-col @3xl:items-start @3xl:justify-center">
                 <span className="text-sm leading-5">{term}-yr fixed</span>
-                <span className="text-trim text-base leading-7 font-semibold whitespace-nowrap">
+                <span className="text-trim text-base leading-7 font-semibold whitespace-nowrap tabular-nums">
                   {formatTermQuote(row.rates[term])}
                 </span>
               </span>
