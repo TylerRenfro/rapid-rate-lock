@@ -1,4 +1,4 @@
-import { CheckIcon, LockClosedIcon as LockMiniIcon } from "@heroicons/react/20/solid"
+import { ArrowPathIcon, CheckIcon, LockClosedIcon as LockMiniIcon } from "@heroicons/react/20/solid"
 import { LockClosedIcon } from "@heroicons/react/24/outline"
 import { Button } from "@/components/ui/button"
 import { selectionKey, useQuoteStore } from "@/lib/store"
@@ -6,12 +6,24 @@ import type { Quote } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 /**
- * Figma: "Quick Quote / Lock bar" — Active (a live selection) or Disabled (quotes expired).
+ * Figma: "Quick Quote / Lock bar" — Active (a live selection) or Expired.
  * Shows how many profiles have a rate picked, not the picks themselves: the cards already show them.
+ * Once quotes expire, "Refresh all rates" takes the lock button's place and the bar floats, so the one
+ * way forward sits where the broker was about to lock, even when the timer has scrolled out of view.
  * Locking only changes the button for now; real lock tracking is still to be designed.
  * It goes back to "Lock in for 1 hour" when the selection changes or a new search runs.
  */
-export function LockBar({ quote, expired }: { quote: Quote; expired: boolean }) {
+export function LockBar({
+  quote,
+  expired,
+  canRefresh,
+  onRefresh,
+}: {
+  quote: Quote
+  expired: boolean
+  canRefresh: boolean
+  onRefresh: () => void
+}) {
   const selections = useQuoteStore((s) => s.selections)
   const lockedKey = useQuoteStore((s) => s.lockedKey)
   const clearSelections = useQuoteStore((s) => s.clearSelections)
@@ -24,8 +36,9 @@ export function LockBar({ quote, expired }: { quote: Quote; expired: boolean }) 
   let title: string
   let subtitle: string | null = null
   if (expired) {
-    title = "No live quotes to lock"
-    subtitle = "Quotes expired. Refresh rates to select and lock."
+    title = "Quotes expired"
+    // Refresh needs every profile complete, same as search; a profile edited since the search may not be.
+    subtitle = canRefresh ? "Refresh for current rates, then pick and lock." : "Fill in and save every profile to refresh."
   } else if (count === 0) {
     title = total === 1 ? "No rate selected" : "No rates selected"
     subtitle = "Pick one rate per profile. Locked rates are held for 1 hour."
@@ -35,8 +48,8 @@ export function LockBar({ quote, expired }: { quote: Quote; expired: boolean }) 
     subtitle = "Locked rates are held for 1 hour."
   }
 
-  // Only float over the cards once there is something to lock
-  const sticky = !expired && count > 0
+  // Float over the cards whenever there is something to do: lock a pick, or refresh expired quotes
+  const sticky = expired || count > 0
 
   return (
     <div
@@ -61,13 +74,18 @@ export function LockBar({ quote, expired }: { quote: Quote; expired: boolean }) 
             Clear
           </Button>
         )}
-        {locked ? (
+        {expired ? (
+          <Button size="lg" className="flex-1 @2xl:flex-none" disabled={!canRefresh} onClick={onRefresh}>
+            <ArrowPathIcon />
+            Refresh all rates
+          </Button>
+        ) : locked ? (
           <Button size="lg" variant="secondary" aria-disabled="true" className="pointer-events-none flex-1 @2xl:flex-none">
             <CheckIcon />
             Locked for 1 hour
           </Button>
         ) : (
-          <Button size="lg" className="flex-1 @2xl:flex-none" disabled={expired || count === 0} onClick={lockSelections}>
+          <Button size="lg" className="flex-1 @2xl:flex-none" disabled={count === 0} onClick={lockSelections}>
             <LockMiniIcon />
             Lock in for 1 hour
           </Button>

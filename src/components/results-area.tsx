@@ -26,14 +26,12 @@ function ResultsView({ quote }: { quote: Quote }) {
       <header className="flex flex-col gap-4 @2xl:flex-row @2xl:items-center @2xl:gap-6">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h2 className="text-2xl leading-8 font-bold">Rapid Rates</h2>
+          {/* Same in every phase: the timer and the lock bar carry the quote's state */}
           <p className="text-sm leading-5">
-            {count} {noun} ·{" "}
-            {expired
-              ? "These quotes are no longer live. Refresh to get current pricing."
-              : "Pick one rate per profile, then lock in for 1 hour."}
+            {count} {noun} · Pick one rate per profile, then lock in for 1 hour.
           </p>
         </div>
-        <QuoteTimer status={status} canRefresh={canRefresh} onRefresh={search} />
+        <QuoteTimer status={status} />
       </header>
 
       {/* Announce phase changes once, not every tick */}
@@ -60,7 +58,7 @@ function ResultsView({ quote }: { quote: Quote }) {
         <p className="text-xs leading-4 text-base-content/70">Each option: interest rate • monthly principal &amp; interest. Pick one per profile.</p>
       </div>
 
-      <LockBar quote={quote} expired={expired} />
+      <LockBar quote={quote} expired={expired} canRefresh={canRefresh} onRefresh={search} />
     </div>
   )
 }

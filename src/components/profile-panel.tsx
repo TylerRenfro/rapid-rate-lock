@@ -116,8 +116,10 @@ export function ProfilePanel() {
       {/* Pinned footer: sticks to the bottom of the screen while the panel is in view (stacked layout)
           and to the bottom of the panel on desktop, so search stays reachable however many profiles are open. */}
       <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-auto flex flex-col gap-2 border-t border-base-300 bg-base-100 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        {/* Primary until the first search; outline once results show, so Lock / Refresh is the one primary on screen */}
         <Button
           size="lg"
+          variant={hasQuote ? "outline" : "default"}
           className="w-full"
           disabled={!canSearch}
           aria-describedby={canSearch ? undefined : "search-hint"}
