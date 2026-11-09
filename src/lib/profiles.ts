@@ -1,6 +1,7 @@
 import {
   CREDIT_TIERS,
   type CompleteProfile,
+  type CreditTier,
   type LoanPurpose,
   type Occupancy,
   type Profile,
@@ -78,7 +79,26 @@ export function hasUnsavedChanges(p: Profile, draft: ProfileValues | undefined) 
 
 export const profileLetter = (index: number) => String.fromCharCode(65 + index)
 
-export const purposeLabel = (v: LoanPurpose) => LOAN_PURPOSES.find((o) => o.value === v)?.label ?? v
+export const occupancyLabel = (v: Occupancy) => OCCUPANCIES.find((o) => o.value === v)?.label ?? v
+
+/** Credit meter strength on the rate card: 4 = best pricing, 1 = weakest. */
+export type CreditBand = 1 | 2 | 3 | 4
+
+/**
+ * Groups the 9 credit tiers into the rate card meter's 4 bands. Tiers that the mock engine
+ * prices alike (CREDIT_ADJ in pricing.ts) share a band, so a fuller meter always means a better rate.
+ */
+export const CREDIT_BAND: Record<CreditTier, CreditBand> = {
+  "780+": 4,
+  "760–779": 3,
+  "740–759": 3,
+  "720–739": 2,
+  "700–719": 2,
+  "680–699": 2,
+  "660–679": 1,
+  "640–659": 1,
+  "620–639": 1,
+}
 
 /**
  * Panel header preview, built from whatever is filled in so far:
@@ -88,11 +108,6 @@ export function profilePreview(p: Profile) {
   const property = PROPERTY_TYPES.find((o) => o.value === p.propertyType)?.label
   const detail = [p.loanAmount ? formatCurrency(p.loanAmount) : null, property].filter(Boolean).join(" · ")
   return { name: p.customerName.trim(), detail }
-}
-
-/** ["780+ credit", "20% down", "Purchase"] (rate card subtitle, shown joined by " · ") */
-export function cardSummary(p: CompleteProfile) {
-  return [`${p.creditTier} credit`, `${p.downPayment}% down`, purposeLabel(p.loanPurpose)]
 }
 
 /** ["A"] → "Profile A", ["A","B"] → "Profiles A and B", ["A","B","C"] → "Profiles A, B and C" */

@@ -58,6 +58,11 @@
   --color-warning-content: var(--warning-content);
   --color-error: var(--error);
   --color-error-content: var(--error-content);
+  /* Rate card credit meter, one per CreditBand (strong = 780+ … weak = 620–679) */
+  --color-credit-strong: var(--credit-strong);
+  --color-credit-good: var(--credit-good);
+  --color-credit-fair: var(--credit-fair);
+  --color-credit-weak: var(--credit-weak);
 
   /* d-borderRadius/btn = 8px drives shadcn's --radius; d-borderRadius/box = 16px */
   --radius-sm: calc(var(--radius) * 0.6);
@@ -99,6 +104,12 @@
   --warning-content: #140b00;
   --error: #c42b3b;
   --error-content: #ffffff;
+  /* Credit meter fills. The two greens aren't library variables yet (placeholders, like success);
+     fair and weak reuse the library's warning and error. All clear 3:1 on base-100 as graphics. */
+  --credit-strong: #176b3a;
+  --credit-good: #35995c;
+  --credit-fair: var(--warning);
+  --credit-weak: var(--error);
   /* u-color/text-input (placeholder) */
   --text-input: #9ca3af;
 
