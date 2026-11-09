@@ -1,14 +1,13 @@
+import { Fragment } from "react"
 import { ProfileBadge } from "@/components/profile-badge"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { formatCurrency, formatTermQuote } from "@/lib/format"
-import { cardSummary, loanDetails } from "@/lib/profiles"
+import { cardSummary } from "@/lib/profiles"
 import { TERMS, type QuoteRow, type Term } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 /**
- * Figma: "Quick Quote / Profile rate card" (Layout=Row) holding three "Quick Quote / Rate option"s.
- * Code adds a divider under the name, then a loan amount + quick facts row above the options (not yet in Figma).
- * Selected = checked radio only, no highlight. Expired = disabled radios, options dimmed to 60%.
+ * Figma: "Quick Quote / Profile rate card" (Layout=Row) holding three "Quick Quote / Rate option"s. * Selected = checked radio only, no highlight. Expired = disabled radios, options dimmed to 60%.
  * Options sit side by side when the results area is wide enough, otherwise they stack.
  */
 export function ProfileRateCard({
@@ -30,41 +29,33 @@ export function ProfileRateCard({
   return (
     <article
       aria-labelledby={labelledBy}
-      className="flex flex-col gap-4 rounded-box border border-base-300 bg-base-100 p-4 shadow-md @lg:p-5"
+      className="flex flex-col gap-4 rounded-box border border-base-300 bg-base-100 p-4 @lg:p-5"
     >
-      {/* Badge pins to the name line (28px) so it stays put when the summary wraps on narrow cards */}
-      <header className="flex min-w-0 items-start gap-3">
-        <ProfileBadge id={badgeId} letter={row.letter} className="mt-0.5" />
-        <div className="flex min-w-0 flex-1 flex-col">
-          {/* Quotes saved before customer name was required may not have one */}
-          <h3 id={titleId} className="truncate text-lg leading-7 font-semibold">
-            {row.profile.customerName.trim() || "Unnamed borrower"}
-          </h3>
-          <p className="text-sm leading-5 text-pretty">{cardSummary(row.profile)}</p>
+      <header className="flex items-center gap-4">
+        {/* Badge pins to the name line (28px) so it stays put when the summary wraps on narrow cards */}
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <ProfileBadge id={badgeId} letter={row.letter} className="mt-0.5" />
+          <div className="flex min-w-0 flex-1 flex-col">
+            {/* Quotes saved before customer name was required may not have one */}
+            <h3 id={titleId} className="truncate text-lg leading-7 font-semibold">
+              {row.profile.customerName.trim() || "Unnamed borrower"}
+            </h3>
+            {/* Each item stays whole ("3% down"), so narrow cards only break between items */}
+            <p className="text-sm leading-5">
+              {cardSummary(row.profile).map((item, i) => (
+                <Fragment key={item}>
+                  {i > 0 && " · "}
+                  <span className="whitespace-nowrap">{item}</span>
+                </Fragment>
+              ))}
+            </p>
+          </div>
         </div>
-      </header>
-
-      <hr className="border-base-300" />
-
-      {/*
-        Loan amount leads; quick facts sit to its right and share its last baseline.
-        Narrow: facts wrap beneath in aligned columns. Wide: the row snaps to the options' 3-column grid
-        (loan amount over 15-yr, facts in 5 equal columns over 20/30-yr) so values line up from card to card.
-      */}
-      <div className="flex flex-wrap items-baseline-last justify-between gap-x-8 gap-y-3 @3xl:grid @3xl:grid-cols-3 @3xl:gap-3">
-        <dl className="flex flex-col gap-1">
+        <dl className="flex shrink-0 flex-col items-end gap-0.5">
           <dt className="text-xs leading-4 text-base-content/70">Loan amount</dt>
           <dd className="text-xl leading-7 font-semibold tabular-nums">{formatCurrency(row.profile.loanAmount)}</dd>
         </dl>
-        <dl className="grid grid-cols-[repeat(3,max-content)] gap-x-6 gap-y-3 @lg:flex @lg:flex-wrap @3xl:col-span-2 @3xl:grid @3xl:grid-cols-5 @3xl:gap-x-4">
-          {loanDetails(row.profile).map((d) => (
-            <div key={d.label} className="flex min-w-0 flex-col gap-1">
-              <dt className="text-xs leading-4 text-base-content/70">{d.label}</dt>
-              <dd className="text-sm leading-5 font-medium whitespace-nowrap tabular-nums">{d.value}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
+      </header>
 
       <RadioGroup
         aria-labelledby={labelledBy}

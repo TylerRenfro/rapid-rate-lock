@@ -90,27 +90,9 @@ export function profilePreview(p: Profile) {
   return { name: p.customerName.trim(), detail }
 }
 
-/** "780+ credit · 20% down · Purchase" (rate card subtitle) */
+/** ["780+ credit", "20% down", "Purchase"] (rate card subtitle, shown joined by " · ") */
 export function cardSummary(p: CompleteProfile) {
-  return `${p.creditTier} credit · ${p.downPayment}% down · ${purposeLabel(p.loanPurpose)}`
-}
-
-/**
- * Rate card quick facts shown beside the loan amount. Property value and LTV are derived from
- * loan amount + down payment (on refinances the down payment field stands in for equity).
- */
-export function loanDetails(p: CompleteProfile) {
-  const ltv = Math.round((100 - p.downPayment) * 10) / 10
-  return [
-    {
-      label: p.loanPurpose === "purchase" ? "Purchase price" : "Home value",
-      value: formatCurrency(p.loanAmount / (ltv / 100)),
-    },
-    { label: "LTV", value: `${ltv}%` },
-    { label: "Occupancy", value: OCCUPANCIES.find((o) => o.value === p.occupancy)?.label ?? p.occupancy },
-    { label: "Property", value: PROPERTY_TYPES.find((o) => o.value === p.propertyType)?.label ?? p.propertyType },
-    { label: "ZIP", value: p.zip },
-  ]
+  return [`${p.creditTier} credit`, `${p.downPayment}% down`, purposeLabel(p.loanPurpose)]
 }
 
 /** ["A"] → "Profile A", ["A","B"] → "Profiles A and B", ["A","B","C"] → "Profiles A, B and C" */

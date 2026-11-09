@@ -57,7 +57,7 @@ function ResultsView({ quote }: { quote: Quote }) {
             />
           ))}
         </div>
-        <p className="text-xs leading-4">Each option: interest rate • monthly principal &amp; interest. Pick one per profile.</p>
+        <p className="text-xs leading-4 text-base-content/70">Each option: interest rate • monthly principal &amp; interest. Pick one per profile.</p>
       </div>
 
       <LockBar quote={quote} expired={expired} />
