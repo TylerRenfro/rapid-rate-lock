@@ -1,5 +1,4 @@
 import { ChevronDownIcon, MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/20/solid"
-import { ChevronUpIcon } from "@heroicons/react/24/solid"
 import { ProfileFields } from "@/components/profile-fields"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
@@ -9,8 +8,9 @@ import { useQuoteStore } from "@/lib/store"
 import type { Profile } from "@/lib/types"
 
 /**
- * Figma: open = "Quick Quote / Profile editor" (no border, chevron-up, "Profile A"),
- * closed = library Collapse (base-300 border, chevron-down, "Profile A · 780+ · 20% down").
+ * Figma: open = "Quick Quote / Profile editor" (no border, "Profile A"),
+ * closed = library Collapse (base-300 border, "Profile A · 780+ · 20% down").
+ * One 20px chevron for both states; it flips when the profile opens.
  */
 function ProfileItem({ profile, letter, open, canRemove }: { profile: Profile; letter: string; open: boolean; canRemove: boolean }) {
   return (
@@ -22,7 +22,10 @@ function ProfileItem({ profile, letter, open, canRemove }: { profile: Profile; l
         <span className="text-trim flex-1 text-base leading-7 font-semibold">
           {open ? `Profile ${letter}` : collapsedTitle(profile, letter)}
         </span>
-        {open ? <ChevronUpIcon className="size-7 shrink-0" /> : <ChevronDownIcon className="size-5 shrink-0" />}
+        <ChevronDownIcon
+          aria-hidden="true"
+          className="size-5 shrink-0 transition-transform duration-200 group-data-[state=open]/accordion-trigger:rotate-180 motion-reduce:transition-none"
+        />
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">
         <ProfileFields profile={profile} canRemove={canRemove} />
@@ -93,10 +96,14 @@ export function ProfilePanel() {
         )}
       </div>
 
-      <Button size="lg" className="w-full" disabled={!canSearch} onClick={handleSearch}>
-        <MagnifyingGlassIcon />
-        {hasQuote ? "Search again" : "Search Rapid Rates"}
-      </Button>
+      {/* Pinned footer: sticks to the bottom of the screen while the panel is in view (stacked layout)
+          and to the bottom of the panel on desktop, so search stays reachable however many profiles are open. */}
+      <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-auto border-t border-base-300 bg-base-100 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <Button size="lg" className="w-full" disabled={!canSearch} onClick={handleSearch}>
+          <MagnifyingGlassIcon />
+          {hasQuote ? "Search again" : "Search Rapid Rates"}
+        </Button>
+      </div>
     </aside>
   )
 }

@@ -9,8 +9,8 @@ export function ResultsEmpty() {
   const count = profiles.length
 
   return (
-    <div className="flex flex-1 items-center justify-center py-8 lg:p-8">
-      <div className="flex max-w-[520px] flex-col items-center gap-4 p-2 text-center sm:p-6">
+    <div className="flex flex-1 items-center justify-center py-8">
+      <div className="flex max-w-3xl flex-col items-center gap-4 px-2 py-6 text-center text-pretty">
         <span className="rounded-full bg-base-300 p-4">
           <MagnifyingGlassIcon className="size-8" />
         </span>
@@ -21,7 +21,7 @@ export function ResultsEmpty() {
             </h2>
             <p className="text-base leading-7">
               Run a search to pull live 15, 20 and 30-year fixed rates for{" "}
-              {profilesPhrase(profiles.map((_, i) => profileLetter(i)))}. Quotes stay live for 60 seconds once
+              <span className="whitespace-nowrap">{profilesPhrase(profiles.map((_, i) => profileLetter(i)))}</span>. Quotes stay live for 60 seconds once
               results load.
             </p>
           </>

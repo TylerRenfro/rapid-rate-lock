@@ -1,9 +1,10 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { AccountMenu } from "@/components/account-menu"
 
 const NAV_ITEMS = ["Dashboard", "Quick Quote", "Pipeline", "Compliance"] as const
 const CURRENT = "Quick Quote"
 
-/** Figma: library Navbar with "Slot / 💎 Quick Quote nav" (center) and "Slot / 💎 Broker" (end). */
+/** Figma: library Navbar with "Slot / 💎 Quick Quote nav" (center) and "Slot / 💎 Broker" (end),
+ * the latter now an account menu. */
 export function AppNavbar() {
   return (
     <header className="flex min-h-16 flex-wrap items-center border-b border-base-300 bg-base-100 p-2">
@@ -48,11 +49,8 @@ export function AppNavbar() {
         </ul>
       </nav>
 
-      <div className="flex items-center justify-end gap-3 md:flex-1">
-        <span className="hidden text-sm leading-5 font-semibold sm:inline">Tyler Renfro</span>
-        <Avatar className="size-12 after:border-transparent">
-          <AvatarFallback className="bg-neutral text-base font-semibold text-neutral-content">TR</AvatarFallback>
-        </Avatar>
+      <div className="flex items-center justify-end md:flex-1">
+        <AccountMenu />
       </div>
     </header>
   )
