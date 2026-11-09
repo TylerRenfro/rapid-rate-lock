@@ -46,8 +46,16 @@
   --color-base-content: var(--base-content);
   --color-neutral: var(--neutral);
   --color-neutral-content: var(--neutral-content);
+  /* d-color/semantic/accent. Named brand-accent because shadcn's own "accent" is the
+     hover surface its menus and selects use, which has to stay a light grey. */
+  --color-brand-accent: var(--accent-bg);
+  --color-brand-accent-foreground: var(--accent-content);
+  --color-info: var(--info);
+  --color-info-content: var(--info-content);
   --color-success: var(--success);
+  --color-success-content: var(--success-content);
   --color-warning: var(--warning);
+  --color-warning-content: var(--warning-content);
   --color-error: var(--error);
   --color-error-content: var(--error-content);
 
@@ -72,11 +80,23 @@
   --base-content: #0f2133;
   --primary-bg: #142b3f;
   --primary-content: #ffffff;
+  --secondary-bg: #3b5669;
+  --secondary-content: #ffffff;
+  /* Teal is 3.3:1 on base-100: fine for fills, icons, borders and large text, too light for small text.
+     Text on a teal fill uses accent-content (5.4:1); white on teal fails AA. */
+  --accent-bg: #1f9a8f;
+  --accent-content: #06141f;
   --neutral: #2a3b4c;
   --neutral-content: #e6edf3;
-  /* Placeholder until synced with the library's d-color/status/success/bg; darkened like warning/error for AA text contrast. */
-  --success: #1f7a4d;
+  /* d-color/status/* */
+  --info: #2b6cb0;
+  --info-content: #ffffff;
+  --success: #1e7b45;
+  --success-content: #ffffff;
+  /* Warning is 3.5:1 on base-100, below AA for normal text: use it for icons and fills,
+     with warning-content (5.3:1) for text on a warning fill. */
   --warning: #c76e00;
+  --warning-content: #140b00;
   --error: #c42b3b;
   --error-content: #ffffff;
   /* u-color/text-input (placeholder) */
@@ -91,10 +111,13 @@
   --popover-foreground: var(--base-content);
   --primary: var(--primary-bg);
   --primary-foreground: var(--primary-content);
-  --secondary: var(--base-200);
-  --secondary-foreground: var(--base-content);
+  /* Library secondary. In shadcn's primitives only the secondary Badge reads it
+     (the secondary Button is styled with base-200 directly). */
+  --secondary: var(--secondary-bg);
+  --secondary-foreground: var(--secondary-content);
   --muted: var(--base-200);
   --muted-foreground: var(--text-input);
+  /* shadcn hover / focus surface for menu and select items, not the library accent (see brand-accent). */
   --accent: var(--base-200);
   --accent-foreground: var(--base-content);
   --destructive: var(--error);
