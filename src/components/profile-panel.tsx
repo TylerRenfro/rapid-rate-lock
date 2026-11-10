@@ -28,7 +28,7 @@ function ProfileItem({ profile, letter, open, canRemove }: { profile: Profile; l
         <ProfileBadge letter={letter} />
         <span className="flex min-w-0 flex-1 flex-col">
           <span className={cn("truncate text-base leading-6", name ? "font-semibold" : "text-base-content/70")}>
-            {name || "New borrower"}
+            {name || "New profile"}
           </span>
           {detail && <span className="truncate text-sm leading-5">{detail}</span>}
           {unsaved && <span className="text-xs leading-4 text-base-content/70">Unsaved changes</span>}
